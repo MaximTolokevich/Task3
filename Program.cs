@@ -44,14 +44,14 @@ namespace Task2
 
                         var vResult = JsonSerializer.Deserialize<EmployeeRepository>(json);
 
-                        foreach (var item in vResult.Employees)
+                        foreach (var item in vResult.GetAllEmployees())
                         {
                             Console.WriteLine($"Id - {item.Id} Name - {item.Name}  Age - {item.Age} Car {item.Car}");
                         }
 
                         break;
                     case "f":                      
-                        var dataFindResult = repository.Employees;
+                        var dataFindResult = repository.GetAllEmployees();
 
                         Console.WriteLine("enter the name to find if needed else insert \"skip\"");
 
@@ -71,6 +71,7 @@ namespace Task2
                             int ageToFind = ReturnValidAge(input);
                             dataFindResult = repository.FindByAge(ageToFind).ToList();
                         }
+
                         Console.WriteLine("enter the Car to find if needed else insert \"skip\"");
 
                         var carInput = Console.ReadLine().Trim();
@@ -86,6 +87,7 @@ namespace Task2
                             Console.WriteLine($"Id - {item.Id} Name - {item.Name}  Age - {item.Age} Car {item.Car}");
                         }
                         break;
+
                     case "d":
                         Console.WriteLine("Enter th Name to delete");
                         var nameToDelete = Console.ReadLine().Trim();
@@ -94,7 +96,9 @@ namespace Task2
                         json = JsonSerializer.Serialize(repository, opt);
                         File.WriteAllText(path, json);
                         break;
+
                     default:
+                        Console.WriteLine($"operation \"{command}\" not supported");
                         break;
                 }
             }

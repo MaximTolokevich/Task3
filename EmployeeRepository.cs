@@ -6,7 +6,7 @@ namespace Task2
 {
     public class EmployeeRepository
     {
-        public List<Employees> Employees { get; set; } = new List<Employees>();
+        private List<Employees> Employees { get; set; } = new List<Employees>();
         [JsonIgnore]
         private int _id = 1;
 
