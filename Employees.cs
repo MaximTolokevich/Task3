@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Task2
+﻿namespace Task2
 {
     public class Employees
     {
@@ -8,7 +6,7 @@ namespace Task2
         public string Name { get; set; }
 
         public int Age { get; set; }
- 
+
         public int Id { get; set; }
 
         public Car Car { get; set; }
