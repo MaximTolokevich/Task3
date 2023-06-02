@@ -6,53 +6,53 @@ namespace Task2
 {
     public class EmployeeRepository
     {
-        public List<Employees> _employees { get; set; } = new List<Employees>();
+        public List<Employees> Employees { get; set; } = new List<Employees>();
         [JsonIgnore]
         private int _id = 1;
 
         public void AddEmployee(string name, int age, Car car)
         {
-            _employees.Add(new Employees() { Name = name, Age = age, Car = car, Id = _id++ });
+            Employees.Add(new Employees() { Name = name, Age = age, Car = car, Id = _id++ });
         }
         public void RemoveById(int id)
         {
-            _employees.Remove(_employees.FirstOrDefault(x => x.Id == id));
+            Employees.Remove(Employees.FirstOrDefault(x => x.Id == id));
         }
         public void RemoveByName(string name)
         {
-            _employees.Remove(_employees.FirstOrDefault(x => x.Name == name));
+            Employees.Remove(Employees.FirstOrDefault(x => x.Name == name));
         }
         public void RemoveByCar(Car car)
         {
-            _employees.Remove(_employees.FirstOrDefault(x => x.Car == car));
+            Employees.Remove(Employees.FirstOrDefault(x => x.Car == car));
         }
         public Employees FindById(int id)
         {
-            return _employees.FirstOrDefault(x => x.Id == id);
+            return Employees.FirstOrDefault(x => x.Id == id);
         }
         public IEnumerable<Employees> FindAllByName(string name)
         {
-            return _employees.Where(x => x.Name == name);
+            return Employees.Where(x => x.Name == name);
         }
         public IEnumerable<Employees> FindAllByCar(Car car)
         {
-            return _employees.Where(x => x.Car == car);
+            return Employees.Where(x => x.Car == car);
         }
         public IEnumerable<Employees> FindByAgeRange(int from, int to)
         {
-            return _employees.Where(x => x.Age >= from && x.Age <= to);
+            return Employees.Where(x => x.Age >= from && x.Age <= to);
         }
         public IEnumerable<Employees> FindByAge(int age)
         {
-            return _employees.Where(x => x.Age == age);
+            return Employees.Where(x => x.Age == age);
         }
         public IEnumerable<Employees> GetAllEmployees()
         {
-            return _employees;
+            return Employees;
         }
         public Employees FindLast()
         {
-            return _employees.Last();
+            return Employees.Last();
         }
     }
 }

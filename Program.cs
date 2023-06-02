@@ -15,22 +15,19 @@ namespace Task2
 
             while (true)
             {
-                var name = string.Empty;
-                int age = 0;
-
                 Console.WriteLine("Enter the command");
                 var command = Console.ReadLine().Trim();
-                var json = string.Empty;
+                string json;
                 switch (command)
                 {
 
                     case "e":
                         Console.WriteLine("Enter the name");
-                        name = ReturnValidName(Console.ReadLine().Trim());
+                        string name = ReturnValidName(Console.ReadLine().Trim());
 
                         Console.WriteLine("Enter the age");
 
-                        age = ReturnValidAge(Console.ReadLine().Trim());
+                        int age = ReturnValidAge(Console.ReadLine().Trim());
                         Console.WriteLine("Enter the car");
                         Car car = ReturnValidCar(Console.ReadLine().Trim());
 
@@ -47,18 +44,14 @@ namespace Task2
 
                         var vResult = JsonSerializer.Deserialize<EmployeeRepository>(json);
 
-                        foreach (var item in vResult._employees)
+                        foreach (var item in vResult.Employees)
                         {
                             Console.WriteLine($"Id - {item.Id} Name - {item.Name}  Age - {item.Age} Car {item.Car}");
                         }
 
                         break;
-                    case "f":
-
-                        json = File.ReadAllText(path);
-
-                        var dataForFind = JsonSerializer.Deserialize<EmployeeRepository>(json);
-                        var dataFindResult = repository._employees;
+                    case "f":                      
+                        var dataFindResult = repository.Employees;
 
                         Console.WriteLine("enter the name to find if needed else insert \"skip\"");
 
@@ -73,11 +66,9 @@ namespace Task2
                         Console.WriteLine("enter the age to find if needed else insert \"skip\"");
 
                         var input = Console.ReadLine().Trim();
-                        var ageToFind = 0;
-
                         if (!input.Equals("skip"))
                         {
-                            ageToFind = ReturnValidAge(input);
+                            int ageToFind = ReturnValidAge(input);
                             dataFindResult = repository.FindByAge(ageToFind).ToList();
                         }
                         Console.WriteLine("enter the Car to find if needed else insert \"skip\"");
@@ -121,8 +112,7 @@ namespace Task2
 
         public static int ReturnValidAge(string input)
         {
-            int age;
-            bool succes = int.TryParse(input, out age);
+            bool succes = int.TryParse(input, out int age);
 
             while (!succes)
             {
