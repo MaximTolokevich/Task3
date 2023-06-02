@@ -38,9 +38,9 @@ namespace Task2
 
                         var opt = new JsonSerializerOptions() { WriteIndented = true };
 
-                        string jsonString = JsonSerializer.Serialize(repository, opt);
+                        json = JsonSerializer.Serialize(repository, opt);
 
-                        File.WriteAllText(path, jsonString);
+                        File.WriteAllText(path, json);
                         break;
                     case "v":
                         json = File.ReadAllText(path);
@@ -67,7 +67,7 @@ namespace Task2
                         if (!string.Equals(nameToFind, "skip"))
                         {
                             nameToFind = ReturnValidName(nameToFind);
-                            dataFindResult = dataFindResult.Where(x => x.Name.Equals(nameToFind)).ToList();
+                            dataFindResult = repository.FindAllByName(nameToFind).ToList();
                         }
 
                         Console.WriteLine("enter the age to find if needed else insert \"skip\"");
@@ -78,7 +78,7 @@ namespace Task2
                         if (!input.Equals("skip"))
                         {
                             ageToFind = ReturnValidAge(input);
-                            dataFindResult = dataFindResult.Where(x=>x.Age == ageToFind).ToList();
+                            dataFindResult = repository.FindByAge(ageToFind).ToList();
                         }
                         Console.WriteLine("enter the Car to find if needed else insert \"skip\"");
 
@@ -87,7 +87,7 @@ namespace Task2
                         if (!carInput.Equals("skip"))
                         {
                             var carToFind = ReturnValidCar(carInput);
-                            dataFindResult = dataFindResult.Where(x=>x.Car == carToFind).ToList();
+                            dataFindResult = repository.FindAllByCar(carToFind).ToList();
                         }
 
                         foreach (var item in dataFindResult)
@@ -98,14 +98,13 @@ namespace Task2
                     case "d":
                         Console.WriteLine("Enter th Name to delete");
                         var nameToDelete = Console.ReadLine().Trim();
-                        repository._employees = repository._employees.Where(x => x.Name != nameToDelete).ToList();
+                        repository.RemoveByName(nameToDelete);
                         opt = new JsonSerializerOptions() { WriteIndented = true };
-                        jsonString = JsonSerializer.Serialize(repository, opt);
-                        File.WriteAllText(path, jsonString);
+                        json = JsonSerializer.Serialize(repository, opt);
+                        File.WriteAllText(path, json);
                         break;
                     default:
                         break;
-
                 }
             }
         }
@@ -124,7 +123,7 @@ namespace Task2
         {
             int age;
             bool succes = int.TryParse(input, out age);
-            
+
             while (!succes)
             {
                 succes = !int.TryParse(Console.ReadLine().Trim(), out age);

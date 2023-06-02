@@ -41,9 +41,13 @@ namespace Task2
         {
             return _employees.Where(x => x.Car == car);
         }
-        public IEnumerable<Employees> FindByAge(int from ,int to)
+        public IEnumerable<Employees> FindByAgeRange(int from ,int to)
         {
            return _employees.Where(x => x.Age >= from && x.Age <= to);
+        }
+        public IEnumerable<Employees> FindByAge(int age)
+        {
+            return _employees.Where(x => x.Age == age);
         }
         public IEnumerable<Employees> GetAllEmployees()
         {
