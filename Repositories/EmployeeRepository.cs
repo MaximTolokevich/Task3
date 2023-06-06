@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Task2.Models;
 
-namespace Task2
+namespace Task2.Repositories
 {
     public class EmployeeRepository
     {
@@ -49,6 +50,10 @@ namespace Task2
         public IEnumerable<Employees> GetAllEmployees()
         {
             return Employees;
+        }
+        public IEnumerable<Employees> RemoveAllByName(string name)
+        {
+            return Employees = Employees.Where(x=>!x.Name.Equals(name)).ToList();
         }
         public Employees FindLast()
         {

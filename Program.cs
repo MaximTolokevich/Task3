@@ -1,7 +1,11 @@
-﻿using System;
+﻿using Serilog;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Task2.Models;
+using Task2.Repositories;
 
 namespace Task2
 {
@@ -10,9 +14,23 @@ namespace Task2
         static void Main(string[] args)
         {
             Console.WriteLine("Employees");
+            
+            var path = Environment.CurrentDirectory + "\\data.txt";
             EmployeeRepository repository = new();
-            var path = @"C:\Users\Trolo\source\repos\EducSenama\Task2\data.txt";
-
+            var file = string.Empty;
+            if (File.Exists(path))
+            {
+                file = File.ReadAllText(path);
+                var savedRepository = JsonSerializer.Deserialize<IEnumerable<Employees>>(file);
+                foreach (var item in savedRepository)
+                {
+                    repository.AddEmployee(item.Name, item.Age, item.Car);
+                }
+            }
+            
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.Console().MinimumLevel.Error().CreateLogger();
+            
             while (true)
             {
                 Console.WriteLine("Enter the command");
@@ -22,64 +40,115 @@ namespace Task2
                 {
 
                     case "e":
-                        Console.WriteLine("Enter the name");
-                        string name = ReturnValidName(Console.ReadLine().Trim());
+                        
+
+                        string name = string.Empty;
+                        while (string.IsNullOrEmpty(name))
+                        {
+                            Console.WriteLine("Enter the name");
+                            name = ReturnValidName(Console.ReadLine().Trim());
+                            if (string.IsNullOrEmpty(name))
+                            {
+                                Log.Error("Name can't be empty");
+                            }
+                        }    
+                        
 
                         Console.WriteLine("Enter the age");
 
-                        int age = ReturnValidAge(Console.ReadLine().Trim());
-                        Console.WriteLine("Enter the car");
-                        Car car = ReturnValidCar(Console.ReadLine().Trim());
+                        int age = 0;
+                        while (age<18 || age>99)
+                        {
+                           age = ReturnValidAge(Console.ReadLine().Trim());
+                        }
+                            
+                        Car car = Car.None;
+                        while (car == Car.None)
+                        {
+                            Console.WriteLine("Enter the car");
+                            
+                            car = ReturnValidCar(Console.ReadLine().Trim());
+                            if (car == Car.None)
+                            {
+                                Log.Error("This car is not valid");
+                            }
+                        }
 
                         repository.AddEmployee(name, age, car);
 
                         var opt = new JsonSerializerOptions() { WriteIndented = true };
+                        try
+                        {
+                            json = JsonSerializer.Serialize(repository.GetAllEmployees(), opt);
 
-                        json = JsonSerializer.Serialize(repository, opt);
-
-                        File.WriteAllText(path, json);
+                            File.WriteAllText(path, json);
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(e.Message);
+                        }
                         break;
                     case "v":
-                        json = File.ReadAllText(path);
-
-                        var vResult = JsonSerializer.Deserialize<EmployeeRepository>(json);
-
-                        foreach (var item in vResult.GetAllEmployees())
+                        try
                         {
-                            Console.WriteLine($"Id - {item.Id} Name - {item.Name}  Age - {item.Age} Car {item.Car}");
+
+                            json = File.ReadAllText(path);
+
+                            var vResult = JsonSerializer.Deserialize<IEnumerable<Employees>>(json);
+
+                            foreach (var item in vResult)
+                            {
+                                Console.WriteLine($"Id - {item.Id} Name - {item.Name}  Age - {item.Age} Car {item.Car}");
+                            }
                         }
+                        catch (JsonException e)
+                        {
+                            Log.Error("data has been corrupted ,try to enter new data");
+                            Log.Error(e.Message);
+                        }
+
 
                         break;
-                    case "f":                      
+                    case "f":
                         var dataFindResult = repository.GetAllEmployees();
 
-                        Console.WriteLine("enter the name to find if needed else insert \"skip\"");
-
+                        Console.WriteLine("enter the name to find if needed else press Enter");
+                         
                         var nameToFind = Console.ReadLine().Trim();
 
-                        if (!string.Equals(nameToFind, "skip"))
+                        if (!nameToFind.Equals(string.Empty))
                         {
                             nameToFind = ReturnValidName(nameToFind);
-                            dataFindResult = repository.FindAllByName(nameToFind).ToList();
+                            if (!string.IsNullOrEmpty(nameToFind))
+                            {
+                                dataFindResult = repository.FindAllByName(nameToFind).ToList();
+                            } 
                         }
 
-                        Console.WriteLine("enter the age to find if needed else insert \"skip\"");
+                        Console.WriteLine("enter the age to find if needed else press Enter");
 
                         var input = Console.ReadLine().Trim();
-                        if (!input.Equals("skip"))
+                        if (!input.Equals(string.Empty))
                         {
                             int ageToFind = ReturnValidAge(input);
-                            dataFindResult = repository.FindByAge(ageToFind).ToList();
+                            if (ageToFind !=0)
+                            {
+                                dataFindResult = repository.FindByAge(ageToFind).ToList();
+                            }
+                            
                         }
 
-                        Console.WriteLine("enter the Car to find if needed else insert \"skip\"");
+                        Console.WriteLine("enter the Car to find if needed else press Enter\\0\\none");
 
                         var carInput = Console.ReadLine().Trim();
 
-                        if (!carInput.Equals("skip"))
+                        if (!carInput.Equals(string.Empty))
                         {
                             var carToFind = ReturnValidCar(carInput);
-                            dataFindResult = repository.FindAllByCar(carToFind).ToList();
+                            if (carToFind != Car.None)
+                            {
+                                dataFindResult = repository.FindAllByCar(carToFind).ToList();
+                            }
                         }
 
                         foreach (var item in dataFindResult)
@@ -89,67 +158,92 @@ namespace Task2
                         break;
 
                     case "d":
-                        Console.WriteLine("Enter th Name to delete");
+
+                        Console.WriteLine("Enter the Name to delete");
                         var nameToDelete = Console.ReadLine().Trim();
-                        repository.RemoveByName(nameToDelete);
+                        repository.RemoveAllByName(nameToDelete);
+
                         opt = new JsonSerializerOptions() { WriteIndented = true };
-                        json = JsonSerializer.Serialize(repository, opt);
+                        json = JsonSerializer.Serialize(repository.GetAllEmployees(), opt);
                         File.WriteAllText(path, json);
+
                         break;
 
                     default:
-                        Console.WriteLine($"operation \"{command}\" not supported");
+                        Log.Error($"operation \"{command}\" not supported");
                         break;
                 }
             }
         }
 
-        public static string ReturnValidName(string name)
+        private static string ReturnValidName(string name)
         {
-            while (!name.All(char.IsLetter) || string.IsNullOrEmpty(name))
+            while (!name.All(char.IsLetter))
             {
-                Console.WriteLine("Name can contains only letters");
+                Log.Error("Name can contains only letters");
                 name = Console.ReadLine().Trim();
+                if (string.IsNullOrEmpty(name))
+                {
+                    return name;
+                }
             }
             return name;
         }
 
-        public static int ReturnValidAge(string input)
+        private static int ReturnValidAge(string input)
         {
             bool succes = int.TryParse(input, out int age);
+            if (age < 18 || age > 99)
+            {
+                succes = false;
+            }
 
             while (!succes)
             {
-                succes = !int.TryParse(Console.ReadLine().Trim(), out age);
+                Log.Error("Input should be a number and be between 18 and 99");
+                string str = Console.ReadLine().Trim();
+                succes = int.TryParse(str, out age);
+                
                 if (succes)
                 {
-                    Console.WriteLine("Your age should be a number");
-                    succes = false;
-                    continue;
+                    if (age < 18 || age > 99)
+                    {
+                        succes = false; ;
+                    }
+                    
                 }
-                if (age < 18 || age > 99)
+                if (string.IsNullOrEmpty(str))
                 {
-                    Console.WriteLine("Your age should be between 18 and 99");
-                    succes = false;
-                    continue;
+                    return 0;
                 }
-                succes = true;
             }
+
             return age;
         }
 
-        public static Car ReturnValidCar(string input)
+        private static Car ReturnValidCar(string input)
         {
-            bool succesCar = Enum.TryParse(input, out Car car);
-
+            bool succesCar = Enum.TryParse(input,true, out Car car);
+            if (Enum.IsDefined(car) && succesCar)
+            {
+                return car;
+            }
+            succesCar = false;
             while (!succesCar)
             {
-                succesCar = Enum.TryParse(Console.ReadLine(), out Car tryCar);
-                car = tryCar;
-                if (!succesCar)
+                Log.Error("this machine is not supported");
+                var str = Console.ReadLine().Trim();
+                if (string.IsNullOrEmpty(str))
                 {
-                    Console.WriteLine("this machine is not supported");
+                    return Car.None;
                 }
+                succesCar = Enum.TryParse(str,true, out Car tryCar);
+                car = tryCar;
+                if (Enum.IsDefined<Car>(car) && succesCar)
+                {
+                    return car;
+                }
+                succesCar = false;
             }
             return car;
         }

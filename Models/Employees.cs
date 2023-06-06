@@ -1,4 +1,4 @@
-﻿namespace Task2
+﻿namespace Task2.Models
 {
     public class Employees
     {
